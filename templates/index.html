@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPD Control Panel</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="mpdControl">
+            <div class="form-group">
+                <label for="mpdAddress">MPD Server Address:</label>
+                <input type="text" class="form-control" id="mpdAddress" placeholder="Enter MPD server address">
+                <button class="btn btn-primary mt-2" onclick="connectToMPD()">Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls" style="display:none;">
+        <div class="container mt-5">
+            <button class="btn btn-primary" onclick="sendCommand('previous')">Previous</button>
+            <button class="btn btn-primary ml-2" onclick="sendCommand('pause')">Pause</button>
+            <button class="btn btn-primary ml-2" onclick="sendCommand('play')">Play</button>
+            <button class="btn btn-primary ml-2" onclick="sendCommand('next')">Next</button>
+            <input type="range" min="0" max="100" value="50" class="slider mt-3" id="volumeSlider" onchange="adjustVolume()">
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let mpdAddress;
+        let mpdControlDiv = document.getElementById('mpdControl');
+        let controlsDiv = document.getElementById('controls');
+
+        function connectToMPD() {
+            mpdAddress = document.getElementById('mpdAddress').value.trim();
+            if (mpdAddress) {
+                mpdControlDiv.style.display = 'none';
+                controlsDiv.style.display = 'block';
+            }
+        }
+
+        function sendCommand(command) {
+            fetch('/mpd', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    command: command
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function adjustVolume() {
+            let volume = document.getElementById('volumeSlider').value;
+            fetch('/mpd', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    command: 'volume',
+                    volume: volume
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
